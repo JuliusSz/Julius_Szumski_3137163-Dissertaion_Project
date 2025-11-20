@@ -90,7 +90,7 @@ class PlayerSearchActivity : ComponentActivity() {
 
                 ) { innerPadding ->
                     Text(
-                        text = "this will be an overview with caught critters,Total steps taken, steps taken today",
+                        text = "Here you can see the players in your surrounding",
                         modifier = Modifier.padding(innerPadding)
                     )
                 }

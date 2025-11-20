@@ -90,7 +90,7 @@ class CollectionActivity : ComponentActivity() {
 
                 ) { innerPadding ->
                     Text(
-                        text = "this will be an overview with caught critters,Total steps taken, steps taken today",
+                        text = "Here you can see all the critters you collected",
                         modifier = Modifier.padding(innerPadding)
                     )
                 }

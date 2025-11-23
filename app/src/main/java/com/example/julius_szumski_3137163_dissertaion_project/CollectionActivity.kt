@@ -1,5 +1,6 @@
 package com.example.julius_szumski_3137163_dissertaion_project
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -7,10 +8,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Home
@@ -23,8 +26,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.julius_szumski_3137163_dissertaion_project.ui.theme.Julius_Szumski_3137163Dissertaion_ProjectTheme
 
 class CollectionActivity : ComponentActivity() {
@@ -89,28 +92,35 @@ class CollectionActivity : ComponentActivity() {
                     }
 
                 ) { innerPadding ->
-                    Text(
-                        text = "Here you can see all the critters you collected",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    critterList(this,innerPadding)
                 }
             }
         }
     }
-}
 
-@Composable
-fun Greeting3(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview3() {
-    Julius_Szumski_3137163Dissertaion_ProjectTheme {
-        Greeting3("Android")
+private var critterCollection= mutableListOf<Critter>()
+
+    @Composable
+    fun critterList(context: Context, padding: PaddingValues){
+        LazyColumn(verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxWidth()
+        ){
+
+            if (critterCollection.isEmpty()){
+                item {
+                    Text(
+                        text = "You have found no Critters yet"
+                    )
+                }
+            }else{
+                //Logic when Players are found
+            }
+
+
+        }
     }
 }

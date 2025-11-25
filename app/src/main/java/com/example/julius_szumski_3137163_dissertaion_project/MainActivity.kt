@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,7 +25,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.julius_szumski_3137163_dissertaion_project.ui.theme.Julius_Szumski_3137163Dissertaion_ProjectTheme
@@ -44,22 +47,37 @@ class MainActivity : ComponentActivity() {
                             }
                         })
                     },
-                    //floatingActionButton = { FloatingActionButton(onClick = {
+                    floatingActionButton = { FloatingActionButton(onClick = {
+                        if(critterSearching.value){
+                            critterSearching.value=false
+                            searchButtonColor.value = Color.Red
+                        }else{
+                            critterSearching.value=true
+                            searchButtonColor.value = Color.Green
+                        }
 
-                    //})},
+                    }, containerColor = searchButtonColor.value){
+                        Icon(
+                            Icons.Filled.AddCircle,
+                            contentDescription ="searchButton",
+                            tint = Color.Black
+                        )
+                    }},
+                    floatingActionButtonPosition = FabPosition.Center,
                     bottomBar = {
                         BottomAppBar(actions = {
                             Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxWidth()) {
-                            Column() {
-                                IconButton( onClick = {
-                                    startActivity(Intent(this@MainActivity, PlayerSearchActivity::class.java))
-                                }) {
-                                    Icon(
-                                        Icons.Filled.AddCircle,
-                                        contentDescription ="Search"
-                                    )
+                                Column() {
+                                    IconButton( onClick = {
+
+                                        startActivityIfNeeded(Intent(this@MainActivity, PlayerSearchActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT),0)
+                                    }) {
+                                        Icon(
+                                            Icons.Filled.AddCircle,
+                                            contentDescription ="Search"
+                                        )
+                                    }
                                 }
-                            }
 
                             Column() {
                                 IconButton( onClick = {
@@ -91,28 +109,51 @@ class MainActivity : ComponentActivity() {
                     }
 
                 ) { innerPadding ->
-                    Text(
+                    Column(modifier = Modifier.padding(innerPadding)){
+                        Row(){
+                            Text(text = "Here You will see Your overview")
+                        }
+                        if (critterSearching.value) {
+                            Row() {
+                                Text(text = "Searching for Critters")
+                            }
+                            Row() {
+                                Text(text = "Progress: ${currentSearchStepCount.value}/ ${stepsTillNextCritter.value}")
+                            }
+                        } else {
+                            Row() {
+                                Text(text = "You are not Searching for Critters at the moment")
+                            }
+                        }
+                        Row(){
+                            Text(text = "Total steps taken:${TotalStepsTaken.value}")
+                        }
+                        Row(){
+                            Text(text = "Steps taken today:${StepsTakenToday.value}")
+                        }
+                        Row(){
+                            Text(text = "Critters collected:${nrCrittersCollected.value}")
+                        }
+                        Row(){
+                            Text(text = "Players met:${nrPlayersMet.value}")
+                        }
+                    }
+                    /**Text(
                         text = "this will be an overview with caught critters,Total steps taken, steps taken today",
                         modifier = Modifier.padding(innerPadding)
-                    )
+                    )**/
                 }
             }
         }
     }
+
+    private val nrPlayersMet = mutableStateOf<Int>(0)
+    private val nrCrittersCollected = mutableStateOf<Int>(0)
+    private val StepsTakenToday = mutableStateOf<Int>(0)
+    private val TotalStepsTaken = mutableStateOf<Int>(0)
+    private val stepsTillNextCritter = mutableStateOf<Int>(0)
+    private val currentSearchStepCount = mutableStateOf<Int>(0)
+    private val critterSearching = mutableStateOf<Boolean>(false)
+    private val searchButtonColor = mutableStateOf<Color>(Color.Red)
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    Julius_Szumski_3137163Dissertaion_ProjectTheme {
-        Greeting("Android")
-    }
-}

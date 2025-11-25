@@ -53,7 +53,8 @@ class CollectionActivity : ComponentActivity() {
                             Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxWidth()) {
                                 Column() {
                                     IconButton( onClick = {
-                                        startActivity(Intent(this@CollectionActivity, PlayerSearchActivity::class.java))
+
+                                        startActivityIfNeeded(Intent(this@CollectionActivity, PlayerSearchActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT),0)
                                     }) {
                                         Icon(
                                             Icons.Filled.AddCircle,
@@ -64,7 +65,7 @@ class CollectionActivity : ComponentActivity() {
 
                                 Column() {
                                     IconButton( onClick = {
-                                        startActivity(Intent(this@CollectionActivity, MainActivity::class.java))
+                                        startActivityIfNeeded(Intent(this@CollectionActivity, MainActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT),0)
                                     }) {
                                         Icon(
                                             Icons.Filled.Home,
@@ -76,7 +77,7 @@ class CollectionActivity : ComponentActivity() {
 
                                 Column() {
                                     IconButton( onClick = {
-                                        startActivity(Intent(this@CollectionActivity, CollectionActivity::class.java))
+                                        startActivityIfNeeded(Intent(this@CollectionActivity, CollectionActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT),0)
                                     }) {
                                         Icon(
                                             Icons.Filled.Menu,

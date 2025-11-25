@@ -58,7 +58,6 @@ class PlayerSearchActivity : ComponentActivity() {
                             searchButtonColor.value = Color.Cyan
                         }
 
-
                     }, containerColor = searchButtonColor.value){
                         Icon(
                             Icons.Filled.AddCircle,
@@ -72,7 +71,8 @@ class PlayerSearchActivity : ComponentActivity() {
                             Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxWidth()) {
                                 Column() {
                                     IconButton( onClick = {
-                                        startActivity(Intent(this@PlayerSearchActivity, PlayerSearchActivity::class.java))
+
+                                        startActivityIfNeeded(Intent(this@PlayerSearchActivity, PlayerSearchActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT),0)
                                     }) {
                                         Icon(
                                             Icons.Filled.AddCircle,
@@ -83,7 +83,7 @@ class PlayerSearchActivity : ComponentActivity() {
 
                                 Column() {
                                     IconButton( onClick = {
-                                        startActivity(Intent(this@PlayerSearchActivity, MainActivity::class.java))
+                                        startActivityIfNeeded(Intent(this@PlayerSearchActivity, MainActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT),0)
                                     }) {
                                         Icon(
                                             Icons.Filled.Home,
@@ -92,10 +92,9 @@ class PlayerSearchActivity : ComponentActivity() {
                                     }
                                 }
 
-
                                 Column() {
                                     IconButton( onClick = {
-                                        startActivity(Intent(this@PlayerSearchActivity, CollectionActivity::class.java))
+                                        startActivityIfNeeded(Intent(this@PlayerSearchActivity, CollectionActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT),0)
                                     }) {
                                         Icon(
                                             Icons.Filled.Menu,

@@ -1,7 +1,13 @@
 package com.example.julius_szumski_3137163_dissertaion_project
 
+import android.content.Context
 import android.content.Intent
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Bundle
+import android.os.PersistableBundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -145,7 +151,9 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        registerSensors()
     }
+
 
     private val nrPlayersMet = mutableStateOf<Int>(0)
     private val nrCrittersCollected = mutableStateOf<Int>(0)
@@ -155,5 +163,23 @@ class MainActivity : ComponentActivity() {
     private val currentSearchStepCount = mutableStateOf<Int>(0)
     private val critterSearching = mutableStateOf<Boolean>(false)
     private val searchButtonColor = mutableStateOf<Color>(Color.Red)
+
+    private fun registerSensors(){
+        val sm: SensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+
+        if(sm.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR) != null){
+            sm.registerListener(stepListener, sm.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR),SensorManager.SENSOR_DELAY_UI)
+        }
+    }
+    private var stepListener: SensorEventListener = object : SensorEventListener{
+        override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
+            TODO("Not yet implemented")
+        }
+
+        override fun onSensorChanged(p0: SensorEvent?) {
+            StepsTakenToday.value++
+        }
+
+    }
 }
 

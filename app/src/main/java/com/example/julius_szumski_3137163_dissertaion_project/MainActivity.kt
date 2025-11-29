@@ -1,16 +1,21 @@
 package com.example.julius_szumski_3137163_dissertaion_project
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
 import android.os.PersistableBundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -31,19 +36,47 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.example.julius_szumski_3137163_dissertaion_project.ui.theme.Julius_Szumski_3137163Dissertaion_ProjectTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
         setContent {
+
+            val context = LocalContext.current
+
+            val permissionLauncher =
+                rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.RequestPermission()
+                ) { isGranted ->
+                    if (isGranted) {
+                        registerSensors()   // ← safe now
+                    }
+                }
+
+            LaunchedEffect(Unit) {
+                if (ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.ACTIVITY_RECOGNITION
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    permissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
+                } else {
+                    registerSensors()
+                }
+            }
+
             Julius_Szumski_3137163Dissertaion_ProjectTheme {
                 Scaffold(modifier = Modifier.fillMaxSize(),
                     topBar = {
@@ -144,6 +177,7 @@ class MainActivity : ComponentActivity() {
                             Text(text = "Players met:${nrPlayersMet.value}")
                         }
                     }
+                    registerSensors()
                     /**Text(
                         text = "this will be an overview with caught critters,Total steps taken, steps taken today",
                         modifier = Modifier.padding(innerPadding)
@@ -151,7 +185,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-        registerSensors()
+
     }
 
 
@@ -173,11 +207,12 @@ class MainActivity : ComponentActivity() {
     }
     private var stepListener: SensorEventListener = object : SensorEventListener{
         override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
-            TODO("Not yet implemented")
+            //notNeeded
         }
 
         override fun onSensorChanged(p0: SensorEvent?) {
             StepsTakenToday.value++
+            Toast.makeText(this@MainActivity,"Step!",Toast.LENGTH_SHORT).show()
         }
 
     }

@@ -45,6 +45,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.julius_szumski_3137163_dissertaion_project.ui.theme.Julius_Szumski_3137163Dissertaion_ProjectTheme
+import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
@@ -93,6 +94,20 @@ class MainActivity : ComponentActivity() {
                         }else{
                             critterSearching.value=true
                             searchButtonColor.value = Color.Green
+                            if(stepsTillNextCritter.value == 0){
+                                val randNr = Random.nextInt(0 , 100)
+                                when(randNr){
+                                    in 0..50 ->{
+                                        stepsTillNextCritter.value = Random.nextInt(1000,3000)
+                                    }
+                                    in 51..80->{
+                                        stepsTillNextCritter.value = Random.nextInt(2000,5000)
+                                    }
+                                    in 81..100->{
+                                        stepsTillNextCritter.value = Random.nextInt(4000,10000)
+                                    }
+                                }
+                            }
                         }
 
                     }, containerColor = searchButtonColor.value){
@@ -182,6 +197,10 @@ class MainActivity : ComponentActivity() {
                         text = "this will be an overview with caught critters,Total steps taken, steps taken today",
                         modifier = Modifier.padding(innerPadding)
                     )**/
+                    if(currentSearchStepCount.value >= stepsTillNextCritter.value){
+                        currentSearchStepCount.value = 0
+                        stepsTillNextCritter.value = 0
+                    }
                 }
             }
         }
@@ -198,6 +217,8 @@ class MainActivity : ComponentActivity() {
     private val critterSearching = mutableStateOf<Boolean>(false)
     private val searchButtonColor = mutableStateOf<Color>(Color.Red)
 
+
+
     private fun registerSensors(){
         val sm: SensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
 
@@ -212,9 +233,16 @@ class MainActivity : ComponentActivity() {
 
         override fun onSensorChanged(p0: SensorEvent?) {
             StepsTakenToday.value++
-            Toast.makeText(this@MainActivity,"Step!",Toast.LENGTH_SHORT).show()
+            currentSearchStepCount.value++
+            TotalStepsTaken.value++
+            //Toast.makeText(this@MainActivity,"Step!",Toast.LENGTH_SHORT).show()
         }
 
     }
+}
+
+data class Critter(var id: Int, var name: String){
+
+
 }
 

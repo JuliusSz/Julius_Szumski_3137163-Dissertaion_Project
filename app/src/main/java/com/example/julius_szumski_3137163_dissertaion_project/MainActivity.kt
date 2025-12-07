@@ -1,9 +1,13 @@
 package com.example.julius_szumski_3137163_dissertaion_project
 
 import android.Manifest
+import android.R
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -51,7 +55,6 @@ import kotlin.random.Random
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         enableEdgeToEdge()
         setContent {
 
@@ -207,6 +210,22 @@ class MainActivity : ComponentActivity() {
 
     }
 
+    override fun onPause() {
+        super.onPause()
+        val tempList: ContentValues = ContentValues().apply {
+            put("CURRENTSTEPSSEARCH",currentSearchStepCount.value)
+            put("CURRENTSTEPSGOAL",stepsTillNextCritter.value)
+            put("TODAYSSTEPS",StepsTakenToday.value)
+            put("TOTALSTEPS",TotalStepsTaken.value)
+        }
+        LocalDBHelperStats(this,"Stats",null,1).writableDatabase.insert("Stats",null,tempList)
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+        retrieveStats(LocalDBHelperStats(this,"Stats",null,1).writableDatabase)
+    }
 
     private val nrPlayersMet = mutableStateOf<Int>(0)
     private val nrCrittersCollected = mutableStateOf<Int>(0)
@@ -235,9 +254,21 @@ class MainActivity : ComponentActivity() {
             StepsTakenToday.value++
             currentSearchStepCount.value++
             TotalStepsTaken.value++
-            //Toast.makeText(this@MainActivity,"Step!",Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@MainActivity,"Step!",Toast.LENGTH_SHORT).show()
         }
 
+    }
+    private fun retrieveStats(dbHelperStats: SQLiteDatabase){
+        val tableName: String = "Stats"
+        val columns: Array<String> = arrayOf("ID","CURRENTSTEPSSEARCH","CURRENTSTEPSGOAL","TODAYSSTEPS","TOTALSTEPS")
+        var cursor: Cursor = dbHelperStats.query(tableName,columns,null,null,null,null,"ID DESC")
+        if (cursor.count>0){
+            cursor.moveToFirst()
+            currentSearchStepCount.value = cursor.getInt(1)
+            stepsTillNextCritter.value = cursor.getInt(2)
+            StepsTakenToday.value = cursor.getInt(3)
+            TotalStepsTaken.value= cursor.getInt(4)
+        }
     }
 }
 

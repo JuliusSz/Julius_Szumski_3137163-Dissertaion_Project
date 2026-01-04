@@ -1,25 +1,49 @@
+
+
+
 plugins {
+
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.gms.google-services")
 }
 
+
 android {
+
+
+
     namespace = "com.example.julius_szumski_3137163_dissertaion_project"
     compileSdk {
         version = release(36)
     }
 
+
+    signingConfigs {
+        create("release") {
+            storeFile = file("my-release-key.keystore")
+            storePassword = "J2u0l0i2us"
+            keyAlias = "mykey"
+            keyPassword = "J2u0l0i2us" }
+    }
+
     defaultConfig {
         applicationId = "com.example.julius_szumski_3137163_dissertaion_project"
-        minSdk = 35
-        targetSdk = 36
+        minSdk = 26
+        compileSdk = 34
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-
+    buildTypes {
+        getByName("release") {
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = false }
+    }
+/**
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -29,6 +53,7 @@ android {
             )
         }
     }
+    **/
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -42,6 +67,9 @@ android {
 }
 
 dependencies {
+    implementation (platform("com.google.firebase:firebase-bom:32.7.3"))
+    implementation ("com.google.firebase:firebase-auth-ktx")
+    implementation ("com.google.firebase:firebase-firestore-ktx")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

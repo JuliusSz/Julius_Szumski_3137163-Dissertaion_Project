@@ -82,7 +82,7 @@ class CollectionActivity : ComponentActivity() {
                                 Column() {
                                     IconButton( onClick = {
                                         startActivityIfNeeded(Intent(this@CollectionActivity, CollectionActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT),0)
-                                    }) {
+                                    }, enabled = false) {
                                         Icon(
                                             Icons.Filled.Menu,
                                             contentDescription = "Collection"
@@ -104,7 +104,7 @@ class CollectionActivity : ComponentActivity() {
     }
 
 
-private var critterCollection= mutableListOf<Critter>()
+private var critterCollection= mutableListOf<String>()
 
     @Composable
     fun critterList(context: Context, padding: PaddingValues){

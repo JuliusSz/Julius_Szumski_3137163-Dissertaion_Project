@@ -49,10 +49,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.julius_szumski_3137163_dissertaion_project.ui.theme.Julius_Szumski_3137163Dissertaion_ProjectTheme
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
+import com.google.type.DateTime
+import java.util.UUID
 import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -60,12 +65,13 @@ class MainActivity : ComponentActivity() {
 
             val context = LocalContext.current
 
+            //Stack overflow
             val permissionLauncher =
                 rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.RequestPermission()
                 ) { isGranted ->
                     if (isGranted) {
-                        registerSensors()   // ← safe now
+                        registerSensors()
                     }
                 }
 
@@ -102,12 +108,15 @@ class MainActivity : ComponentActivity() {
                                 when(randNr){
                                     in 0..50 ->{
                                         stepsTillNextCritter.value = Random.nextInt(1000,3000)
+                                        CurrentCritter.value = CritterType.CommonPH
                                     }
                                     in 51..80->{
                                         stepsTillNextCritter.value = Random.nextInt(2000,5000)
+                                        CurrentCritter.value = CritterType.RarePH
                                     }
                                     in 81..100->{
                                         stepsTillNextCritter.value = Random.nextInt(4000,10000)
+                                        CurrentCritter.value = CritterType.LegendaryPH
                                     }
                                 }
                             }
@@ -138,8 +147,8 @@ class MainActivity : ComponentActivity() {
 
                             Column() {
                                 IconButton( onClick = {
-                                    startActivity(Intent(this@MainActivity, MainActivity::class.java))
-                                }) {
+                                    startActivityIfNeeded(Intent(this@MainActivity, MainActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT),0)
+                                }, enabled = false) {
                                     Icon(
                                         Icons.Filled.Home,
                                         contentDescription ="Overview"
@@ -196,13 +205,12 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                     registerSensors()
-                    /**Text(
-                        text = "this will be an overview with caught critters,Total steps taken, steps taken today",
-                        modifier = Modifier.padding(innerPadding)
-                    )**/
-                    if(currentSearchStepCount.value >= stepsTillNextCritter.value){
+                    if(currentSearchStepCount.value >= stepsTillNextCritter.value&& stepsTillNextCritter.value != 0){
                         currentSearchStepCount.value = 0
                         stepsTillNextCritter.value = 0
+                        catchCritter(CurrentCritter.value)
+                        CurrentCritter.value = CritterType.None
+                        critterSearching.value = false
                     }
                 }
             }
@@ -217,6 +225,8 @@ class MainActivity : ComponentActivity() {
             put("CURRENTSTEPSGOAL",stepsTillNextCritter.value)
             put("TODAYSSTEPS",StepsTakenToday.value)
             put("TOTALSTEPS",TotalStepsTaken.value)
+            put("USERTOKEN",userToken.value)
+
         }
         LocalDBHelperStats(this,"Stats",null,1).writableDatabase.insert("Stats",null,tempList)
 
@@ -224,9 +234,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        userToken.value = intent.getStringExtra("userToken").toString()
         retrieveStats(LocalDBHelperStats(this,"Stats",null,1).writableDatabase)
     }
 
+    private val CurrentCritter = mutableStateOf<CritterType>(CritterType.None)
+    private  val userToken = mutableStateOf<String>("")
     private val nrPlayersMet = mutableStateOf<Int>(0)
     private val nrCrittersCollected = mutableStateOf<Int>(0)
     private val StepsTakenToday = mutableStateOf<Int>(0)
@@ -235,6 +248,7 @@ class MainActivity : ComponentActivity() {
     private val currentSearchStepCount = mutableStateOf<Int>(0)
     private val critterSearching = mutableStateOf<Boolean>(false)
     private val searchButtonColor = mutableStateOf<Color>(Color.Red)
+    private val collectedCritter = mutableListOf<String>()
 
 
 
@@ -261,7 +275,7 @@ class MainActivity : ComponentActivity() {
     private fun retrieveStats(dbHelperStats: SQLiteDatabase){
         val tableName: String = "Stats"
         val columns: Array<String> = arrayOf("ID","CURRENTSTEPSSEARCH","CURRENTSTEPSGOAL","TODAYSSTEPS","TOTALSTEPS")
-        var cursor: Cursor = dbHelperStats.query(tableName,columns,null,null,null,null,"ID DESC")
+        var cursor: Cursor = dbHelperStats.query(tableName,columns,"USERTOKEN = ?",arrayOf(userToken.value),null,null,"ID DESC")
         if (cursor.count>0){
             cursor.moveToFirst()
             currentSearchStepCount.value = cursor.getInt(1)
@@ -270,10 +284,28 @@ class MainActivity : ComponentActivity() {
             TotalStepsTaken.value= cursor.getInt(4)
         }
     }
+    private fun catchCritter(critterType: CritterType){
+        var name: String
+        when(critterType){
+            CritterType.CommonPH -> name = "Bed-Bug"
+            CritterType.RarePH -> name = "Stick-Bug"
+            CritterType.LegendaryPH -> name = "Code-Bug"
+            else -> name = "How did we get here?"
+        }
+
+        val Id: UUID = UUID.randomUUID()
+        val db = Firebase.firestore
+        val collectedCritter = hashMapOf(
+            "ID" to Id.toString(),
+            "User" to userToken.value,
+            "Type" to critterType.toString(),
+            "Name" to name
+        )
+        db.collection("users").document(userToken.value).update("Critter",collectedCritter.toList())
+        db.collection("critter").document(Id.toString()).set(collectedCritter)
+    }
 }
 
-data class Critter(var id: Int, var name: String){
-
-
+enum class CritterType{
+    None, CommonPH, RarePH, LegendaryPH
 }
-

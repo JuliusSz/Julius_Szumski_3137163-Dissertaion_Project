@@ -14,7 +14,7 @@ class LocalDBHelperStats (context: Context, name: String, factory: SQLiteDatabas
         db?.execSQL(CREATE_TABLE)
     }
 
-    private val CREATE_TABLE: String = "create table if not Exists Stats("+"ID integer primary key autoincrement,"+"CURRENTSTEPSSEARCH integer,"+"CURRENTSTEPSGOAL integer,"+"TODAYSSTEPS integer,"+"TOTALSTEPS integer"+")"
+    private val CREATE_TABLE: String = "create table if not Exists Stats("+"ID integer primary key autoincrement,"+"CURRENTSTEPSSEARCH integer,"+"CURRENTSTEPSGOAL integer,"+"TODAYSSTEPS integer,"+"TOTALSTEPS integer,"+"USERTOKEN string"+")"
 
 
     private val DROP_TABLE: String = "drop Table todoLists"

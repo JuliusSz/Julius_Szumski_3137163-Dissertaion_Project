@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "135235626980",
+    "project_id": "critter-collector-ms-3137163",
+    "storage_bucket": "critter-collector-ms-3137163.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:135235626980:android:1b38cc0b7f41de0f7a89f1",
+        "android_client_info": {
+          "package_name": "com.example.julius_szumski_3137163_dissertaion_project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDB0Wcs30pyr1NHseJ4ff2TukzA-iLPWvo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

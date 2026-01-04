@@ -1,16 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.julius_szumski_3137163_dissertaion_project"
     xmlns:tools="http://schemas.android.com/tools">
+
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:label="Critter Collector"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Julius_Szumski_3137163Dissertaion_Project">
+        <activity
+            android:name=".LogIn"
+            android:exported="true"
+            android:label="@string/title_activity_log_in"
+            android:theme="@style/Theme.Julius_Szumski_3137163Dissertaion_Project">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".CollectionActivity"
             android:exported="false"
@@ -26,11 +41,7 @@
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.Julius_Szumski_3137163Dissertaion_Project">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
     </application>
 

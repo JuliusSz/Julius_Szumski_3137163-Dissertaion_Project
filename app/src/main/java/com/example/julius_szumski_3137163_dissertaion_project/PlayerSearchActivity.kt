@@ -73,7 +73,7 @@ class PlayerSearchActivity : ComponentActivity() {
                                     IconButton( onClick = {
 
                                         startActivityIfNeeded(Intent(this@PlayerSearchActivity, PlayerSearchActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT),0)
-                                    }) {
+                                    }, enabled = false) {
                                         Icon(
                                             Icons.Filled.AddCircle,
                                             contentDescription ="Search"

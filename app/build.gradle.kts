@@ -30,8 +30,9 @@ android {
 
     defaultConfig {
         applicationId = "com.example.julius_szumski_3137163_dissertaion_project"
-        minSdk = 26
-        compileSdk = 34
+        minSdk =
+            26
+        compileSdk = 35
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"

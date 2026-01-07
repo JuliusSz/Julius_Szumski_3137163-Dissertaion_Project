@@ -84,14 +84,11 @@ class LogIn : ComponentActivity() {
                                             ).addOnSuccessListener { correctPw ->
                                                 correctPw.user?.getIdToken(true)
                                                     ?.addOnSuccessListener { result ->
-                                                        onLoginSuccess(result.token!!)
+                                                        onLoginSuccess(correctPw.user!!.uid)
                                                     }
                                             }.addOnFailureListener {
                                                 Toast.makeText(
-                                                    this@LogIn,
-                                                    "Wrong Password or email",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
+                                                    this@LogIn, "Wrong Password or email", Toast.LENGTH_SHORT).show()
                                             }
                                         }
                                 ) {

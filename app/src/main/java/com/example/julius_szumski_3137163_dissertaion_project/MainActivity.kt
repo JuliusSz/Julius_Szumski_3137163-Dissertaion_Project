@@ -235,6 +235,7 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         userToken.value = intent.getStringExtra("userToken").toString()
+        Toast.makeText(this@MainActivity,userToken.value,Toast.LENGTH_SHORT).show()
         retrieveStats(LocalDBHelperStats(this,"Stats",null,1).writableDatabase)
     }
 
@@ -273,6 +274,7 @@ class MainActivity : ComponentActivity() {
 
     }
     private fun retrieveStats(dbHelperStats: SQLiteDatabase){
+
         val tableName: String = "Stats"
         val columns: Array<String> = arrayOf("ID","CURRENTSTEPSSEARCH","CURRENTSTEPSGOAL","TODAYSSTEPS","TOTALSTEPS")
         var cursor: Cursor = dbHelperStats.query(tableName,columns,"USERTOKEN = ?",arrayOf(userToken.value),null,null,"ID DESC")
@@ -282,6 +284,7 @@ class MainActivity : ComponentActivity() {
             stepsTillNextCritter.value = cursor.getInt(2)
             StepsTakenToday.value = cursor.getInt(3)
             TotalStepsTaken.value= cursor.getInt(4)
+            Toast.makeText(this@MainActivity,"stats retrieved!",Toast.LENGTH_SHORT).show()
         }
     }
     private fun catchCritter(critterType: CritterType){

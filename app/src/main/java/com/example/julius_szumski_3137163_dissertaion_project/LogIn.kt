@@ -75,22 +75,20 @@ class LogIn : ComponentActivity() {
                         }
                         Row(Modifier.padding(50.dp, 10.dp)) {
                             Column(Modifier.padding(10.dp, 0.dp)) {
-                                Button(
-                                    onClick =
-                                        {
-                                            auth.signInWithEmailAndPassword(
-                                                email.value,
-                                                password.value
-                                            ).addOnSuccessListener { correctPw ->
-                                                correctPw.user?.getIdToken(true)
-                                                    ?.addOnSuccessListener { result ->
-                                                        onLoginSuccess(correctPw.user!!.uid)
-                                                    }
-                                            }.addOnFailureListener {
-                                                Toast.makeText(
-                                                    this@LogIn, "Wrong Password or email", Toast.LENGTH_SHORT).show()
-                                            }
+                                Button(onClick = {
+                                    if(email.value.isNotBlank() || password.value.isNotBlank()){
+                                        auth.signInWithEmailAndPassword(email.value, password.value).addOnSuccessListener { correctPw ->
+                                            correctPw.user?.getIdToken(true)
+                                                ?.addOnSuccessListener { result ->
+                                                    onLoginSuccess(correctPw.user!!.uid)
+                                                }
+                                        }.addOnFailureListener {
+                                            Toast.makeText(this@LogIn, "Wrong Password or email", Toast.LENGTH_SHORT).show()
                                         }
+                                    }else{
+                                        Toast.makeText(this@LogIn, "Email or password are empty", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
                                 ) {
                                     Text("Log In")
                                 }
@@ -99,7 +97,11 @@ class LogIn : ComponentActivity() {
                                 Button(
                                     onClick =
                                         {
-                                            register()
+                                            if(email.value.isNotBlank() || password.value.isNotBlank() ){
+                                                register()
+                                            }else{
+                                                Toast.makeText(this@LogIn, "Email or password are empty", Toast.LENGTH_SHORT).show()
+                                            }
                                         }
                                 ) {
                                     Text("Register")

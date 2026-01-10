@@ -30,9 +30,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.example.julius_szumski_3137163_dissertaion_project.ui.theme.Julius_Szumski_3137163Dissertaion_ProjectTheme
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.model.Document
 
 class CollectionActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -58,7 +63,7 @@ class CollectionActivity : ComponentActivity() {
                                 Column() {
                                     IconButton( onClick = {
 
-                                        startActivityIfNeeded(Intent(this@CollectionActivity, PlayerSearchActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT),0)
+                                        startActivityIfNeeded(Intent(this@CollectionActivity, PlayerSearchActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT).putExtra("userToken",userID.value ),0)
                                     }) {
                                         Icon(
                                             Icons.Filled.AddCircle,
@@ -69,7 +74,7 @@ class CollectionActivity : ComponentActivity() {
 
                                 Column() {
                                     IconButton( onClick = {
-                                        startActivityIfNeeded(Intent(this@CollectionActivity, MainActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT),0)
+                                        startActivityIfNeeded(Intent(this@CollectionActivity, MainActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT).putExtra("userToken",userID.value ),0)
                                     }) {
                                         Icon(
                                             Icons.Filled.Home,
@@ -81,7 +86,7 @@ class CollectionActivity : ComponentActivity() {
 
                                 Column() {
                                     IconButton( onClick = {
-                                        startActivityIfNeeded(Intent(this@CollectionActivity, CollectionActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT),0)
+                                        startActivityIfNeeded(Intent(this@CollectionActivity, CollectionActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT).putExtra("userToken",userID.value ),0)
                                     }, enabled = false) {
                                         Icon(
                                             Icons.Filled.Menu,
@@ -103,8 +108,19 @@ class CollectionActivity : ComponentActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        userID.value = intent.getStringExtra("userToken").toString()
+        val db = Firebase.firestore
+        db.collection("critter").whereEqualTo("User",userID.value).get().addOnSuccessListener { docs->
+            for (document in docs.documents){
+                critterCollection.add(document)
+            }
+        }
 
-private var critterCollection= mutableListOf<String>()
+    }
+    private  val userID = mutableStateOf<String>("")
+    private var critterCollection= mutableListOf<DocumentSnapshot>()
 
     @Composable
     fun critterList(context: Context, padding: PaddingValues){
@@ -122,7 +138,11 @@ private var critterCollection= mutableListOf<String>()
                     )
                 }
             }else{
-                //Logic when Players are found
+               for (critter in critterCollection){
+
+
+               }
+
             }
 
 

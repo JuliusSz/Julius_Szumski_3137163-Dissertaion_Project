@@ -72,7 +72,7 @@ class PlayerSearchActivity : ComponentActivity() {
                                 Column() {
                                     IconButton( onClick = {
 
-                                        startActivityIfNeeded(Intent(this@PlayerSearchActivity, PlayerSearchActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT),0)
+                                        startActivityIfNeeded(Intent(this@PlayerSearchActivity, PlayerSearchActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT).putExtra("userToken",userID.value ),0)
                                     }, enabled = false) {
                                         Icon(
                                             Icons.Filled.AddCircle,
@@ -83,7 +83,7 @@ class PlayerSearchActivity : ComponentActivity() {
 
                                 Column() {
                                     IconButton( onClick = {
-                                        startActivityIfNeeded(Intent(this@PlayerSearchActivity, MainActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT),0)
+                                        startActivityIfNeeded(Intent(this@PlayerSearchActivity, MainActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT).putExtra("userToken",userID.value ),0)
                                     }) {
                                         Icon(
                                             Icons.Filled.Home,
@@ -94,7 +94,7 @@ class PlayerSearchActivity : ComponentActivity() {
 
                                 Column() {
                                     IconButton( onClick = {
-                                        startActivityIfNeeded(Intent(this@PlayerSearchActivity, CollectionActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT),0)
+                                        startActivityIfNeeded(Intent(this@PlayerSearchActivity, CollectionActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT).putExtra("userToken",userID.value ),0)
                                     }) {
                                         Icon(
                                             Icons.Filled.Menu,
@@ -131,8 +131,13 @@ class PlayerSearchActivity : ComponentActivity() {
     }
     private val searchButtonColor = mutableStateOf<Color>(Color.Magenta)
     private val searching = mutableStateOf<Boolean>(false)
-
+    private  val userID = mutableStateOf<String>("")
     private var foundPlayer = mutableListOf<Int>()
+
+    override fun onResume() {
+        super.onResume()
+        userID.value = intent.getStringExtra("userToken").toString()
+    }
 
     @Composable
     fun foundPlayersList(context: Context, padding: PaddingValues){

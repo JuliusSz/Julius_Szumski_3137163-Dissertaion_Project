@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -52,6 +53,10 @@ import com.example.julius_szumski_3137163_dissertaion_project.ui.theme.Julius_Sz
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import com.google.type.DateTime
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 import kotlin.random.Random
 
@@ -60,10 +65,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
         setContent {
-
             val context = LocalContext.current
+
 
             //Stack overflow
             val permissionLauncher =
@@ -86,6 +92,7 @@ class MainActivity : ComponentActivity() {
                     registerSensors()
                 }
             }
+            //Stack overflow end
 
             Julius_Szumski_3137163Dissertaion_ProjectTheme {
                 Scaffold(modifier = Modifier.fillMaxSize(),
@@ -136,7 +143,7 @@ class MainActivity : ComponentActivity() {
                                 Column() {
                                     IconButton( onClick = {
 
-                                        startActivityIfNeeded(Intent(this@MainActivity, PlayerSearchActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT),0)
+                                        startActivityIfNeeded(Intent(this@MainActivity, PlayerSearchActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT).putExtra("userToken",userID.value ),0)
                                     }) {
                                         Icon(
                                             Icons.Filled.AddCircle,
@@ -147,7 +154,7 @@ class MainActivity : ComponentActivity() {
 
                             Column() {
                                 IconButton( onClick = {
-                                    startActivityIfNeeded(Intent(this@MainActivity, MainActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT),0)
+                                    startActivityIfNeeded(Intent(this@MainActivity, MainActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT).putExtra("userToken",userID.value ),0)
                                 }, enabled = false) {
                                     Icon(
                                         Icons.Filled.Home,
@@ -156,10 +163,9 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
 
-
                             Column() {
                                 IconButton( onClick = {
-                                    startActivity(Intent(this@MainActivity, CollectionActivity::class.java))
+                                    startActivity(Intent(this@MainActivity, CollectionActivity::class.java).putExtra("userToken",userID.value ))
                                 }) {
                                     Icon(
                                         Icons.Filled.Menu,
@@ -185,6 +191,13 @@ class MainActivity : ComponentActivity() {
                             }
                             Row() {
                                 Text(text = "Progress: ${currentSearchStepCount.value}/ ${stepsTillNextCritter.value}")
+                                if(demo.value){
+                                    Button(onClick = {
+                                        currentSearchStepCount.value = stepsTillNextCritter.value-1
+                                    }) {
+                                        Text("Complete Critter search")
+                                    }
+                                }
                             }
                         } else {
                             Row() {
@@ -199,6 +212,7 @@ class MainActivity : ComponentActivity() {
                         }
                         Row(){
                             Text(text = "Critters collected:${nrCrittersCollected.value}")
+
                         }
                         Row(){
                             Text(text = "Players met:${nrPlayersMet.value}")
@@ -206,9 +220,10 @@ class MainActivity : ComponentActivity() {
                     }
                     registerSensors()
                     if(currentSearchStepCount.value >= stepsTillNextCritter.value&& stepsTillNextCritter.value != 0){
+                        catchCritter(CurrentCritter.value)
                         currentSearchStepCount.value = 0
                         stepsTillNextCritter.value = 0
-                        catchCritter(CurrentCritter.value)
+
                         CurrentCritter.value = CritterType.None
                         critterSearching.value = false
                     }
@@ -225,7 +240,7 @@ class MainActivity : ComponentActivity() {
             put("CURRENTSTEPSGOAL",stepsTillNextCritter.value)
             put("TODAYSSTEPS",StepsTakenToday.value)
             put("TOTALSTEPS",TotalStepsTaken.value)
-            put("USERTOKEN",userToken.value)
+            put("USERTOKEN",userID.value)
 
         }
         LocalDBHelperStats(this,"Stats",null,1).writableDatabase.insert("Stats",null,tempList)
@@ -234,13 +249,22 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        userToken.value = intent.getStringExtra("userToken").toString()
-        Toast.makeText(this@MainActivity,userToken.value,Toast.LENGTH_SHORT).show()
+        userID.value = intent.getStringExtra("userToken").toString()
+        val db = Firebase.firestore
+        //Toast.makeText(this@MainActivity,userToken.value,Toast.LENGTH_SHORT).show()
         retrieveStats(LocalDBHelperStats(this,"Stats",null,1).writableDatabase)
+
+        db.collection("users").document(userID.value).get().addOnSuccessListener { document ->
+                val critters = document.get("CritterCollection") as? List<String> ?: emptyList()
+                collectedCritter.clear()
+                collectedCritter.addAll(critters)
+                nrCrittersCollected.value = collectedCritter.size
+        }
     }
 
     private val CurrentCritter = mutableStateOf<CritterType>(CritterType.None)
-    private  val userToken = mutableStateOf<String>("")
+    private  val userID = mutableStateOf<String>("")
+
     private val nrPlayersMet = mutableStateOf<Int>(0)
     private val nrCrittersCollected = mutableStateOf<Int>(0)
     private val StepsTakenToday = mutableStateOf<Int>(0)
@@ -250,6 +274,7 @@ class MainActivity : ComponentActivity() {
     private val critterSearching = mutableStateOf<Boolean>(false)
     private val searchButtonColor = mutableStateOf<Color>(Color.Red)
     private val collectedCritter = mutableListOf<String>()
+    private val demo = mutableStateOf<Boolean>(true)
 
 
 
@@ -269,22 +294,23 @@ class MainActivity : ComponentActivity() {
             StepsTakenToday.value++
             currentSearchStepCount.value++
             TotalStepsTaken.value++
-            Toast.makeText(this@MainActivity,"Step!",Toast.LENGTH_SHORT).show()
+            //Toast.makeText(this@MainActivity,"Step!",Toast.LENGTH_SHORT).show()
         }
 
     }
+    //retrieves the last game state from the sqlite Database
     private fun retrieveStats(dbHelperStats: SQLiteDatabase){
 
         val tableName: String = "Stats"
         val columns: Array<String> = arrayOf("ID","CURRENTSTEPSSEARCH","CURRENTSTEPSGOAL","TODAYSSTEPS","TOTALSTEPS")
-        var cursor: Cursor = dbHelperStats.query(tableName,columns,"USERTOKEN = ?",arrayOf(userToken.value),null,null,"ID DESC")
+        var cursor: Cursor = dbHelperStats.query(tableName,columns,"USERTOKEN = ?",arrayOf(userID.value),null,null,"ID DESC")
         if (cursor.count>0){
             cursor.moveToFirst()
             currentSearchStepCount.value = cursor.getInt(1)
             stepsTillNextCritter.value = cursor.getInt(2)
             StepsTakenToday.value = cursor.getInt(3)
             TotalStepsTaken.value= cursor.getInt(4)
-            Toast.makeText(this@MainActivity,"stats retrieved!",Toast.LENGTH_SHORT).show()
+            //Toast.makeText(this@MainActivity,"stats retrieved!",Toast.LENGTH_SHORT).show()
         }
     }
     private fun catchCritter(critterType: CritterType){
@@ -298,14 +324,19 @@ class MainActivity : ComponentActivity() {
 
         val Id: UUID = UUID.randomUUID()
         val db = Firebase.firestore
-        val collectedCritter = hashMapOf(
+        val collectedCritterHsh = hashMapOf(
             "ID" to Id.toString(),
-            "User" to userToken.value,
+            "User" to userID.value,
             "Type" to critterType.toString(),
-            "Name" to name
+            "Name" to name,
+            "Steps" to currentSearchStepCount.value,
+            "catchDate" to LocalDate.now().toString(),
+            "catchTime" to LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
         )
-        db.collection("users").document(userToken.value).update("Critter",collectedCritter.toList())
-        db.collection("critter").document(Id.toString()).set(collectedCritter)
+        collectedCritter.add(collectedCritterHsh.get("ID").toString())
+        db.collection("users").document(userID.value).update("CritterCollection",collectedCritter.toList())
+        db.collection("critter").document(Id.toString()).set(collectedCritterHsh)
+        nrCrittersCollected.value = collectedCritter.size
     }
 }
 

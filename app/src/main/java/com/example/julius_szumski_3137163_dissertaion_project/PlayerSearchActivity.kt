@@ -30,6 +30,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -107,6 +108,7 @@ class PlayerSearchActivity : ComponentActivity() {
 
                             BLEadvert.startAdvertising(BLEadvSettings,ComData,object : AdvertiseCallback(){})
                             BLEscanner.startScan(listOf(scanFilter),BLEscanSettings,object : ScanCallback(){
+                                @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
                                 override fun onScanResult(callbackType: Int, result: ScanResult) {
                                     BLEscanner.stopScan(this)
                                     result.device.connectGatt(this@PlayerSearchActivity, false, gattCallback
@@ -228,13 +230,15 @@ class PlayerSearchActivity : ComponentActivity() {
     }
 
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun initBLE() {
-        blManager =  getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        blManager =  getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
         blAdapter= blManager.adapter
         BLEadvert = blAdapter.bluetoothLeAdvertiser
         BLEscanner= blAdapter.bluetoothLeScanner
 
         gatt = blManager.openGattServer(this, object:BluetoothGattServerCallback(){
+            @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             override fun onCharacteristicWriteRequest(
                 device: BluetoothDevice,
                 requestId: Int,
@@ -258,6 +262,7 @@ class PlayerSearchActivity : ComponentActivity() {
                     characteristic.value
                 )
             }
+            @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             override fun onCharacteristicReadRequest(
                 device: BluetoothDevice,
                 requestId: Int,
@@ -276,12 +281,14 @@ class PlayerSearchActivity : ComponentActivity() {
         gatt.addService(service)
         gattCallback = object : BluetoothGattCallback(){
 
+            @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
                 if (newState == BluetoothProfile.STATE_CONNECTED) {
                     gatt!!.discoverServices()
                 }
             }
 
+            @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int){
                 val characteristic = gatt!!.getService(BLEIdentifier).getCharacteristic(HandshakeIdentifier)
                 characteristic.value = "HELLO".toByteArray()
@@ -306,6 +313,7 @@ class PlayerSearchActivity : ComponentActivity() {
 
 
 
+            @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             override fun onCharacteristicWrite(
                 gatt: BluetoothGatt,
                 characteristic: BluetoothGattCharacteristic,
@@ -345,6 +353,7 @@ class PlayerSearchActivity : ComponentActivity() {
     lateinit var gattCallback: BluetoothGattCallback
 
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 2) {

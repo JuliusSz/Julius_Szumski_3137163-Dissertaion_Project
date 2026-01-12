@@ -1,5 +1,6 @@
 package com.example.julius_szumski_3137163_dissertaion_project
 
+import android.R
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
@@ -19,22 +20,29 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Surface
@@ -46,6 +54,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.example.julius_szumski_3137163_dissertaion_project.ui.theme.Julius_Szumski_3137163Dissertaion_ProjectTheme
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.DocumentSnapshot
@@ -116,6 +125,11 @@ class CollectionActivity : ComponentActivity() {
 
                 ) { innerPadding ->
                     CritterList(this,innerPadding)
+                    if(showCard.value){
+                        Box(Modifier.fillMaxSize().zIndex(1f), contentAlignment = Alignment.Center) {
+                            critterCard(cardName.value,cardType.value,cardSteps.value,cardDate.value,cardTime.value)
+                        }
+                    }
                 }
             }
         }
@@ -136,6 +150,12 @@ class CollectionActivity : ComponentActivity() {
     private  val userID = mutableStateOf<String>("")
     private var critterCollection= mutableListOf<DocumentSnapshot>()
     private val critterCount = mutableStateOf<Int>(0)
+    private val showCard = mutableStateOf<Boolean>(false)
+    private val cardName = mutableStateOf<String>("")
+    private val cardSteps = mutableStateOf<String>("")
+    private val cardType = mutableStateOf<String>("")
+    private val cardDate = mutableStateOf<String>("")
+    private val cardTime = mutableStateOf<String>("")
 
     @Composable
     fun CritterList(context: Context, padding: PaddingValues){
@@ -161,19 +181,40 @@ class CollectionActivity : ComponentActivity() {
                                 when(critter.get("Type")){
                                     "CommonPH" ->
                                         Box(modifier = Modifier.weight(1f).padding(5.dp).height(100.dp).width(100.dp).border(3.dp, Color.Blue, RoundedCornerShape(10)), contentAlignment = Alignment.Center){
-                                            Card() {
+                                            Card(onClick = {
+                                                cardName.value = critter.get("Name").toString()
+                                                cardType.value = critter.get("Type").toString()
+                                                cardSteps.value =critter.get("Steps").toString()
+                                                cardDate.value =critter.get("catchDate").toString()
+                                                cardTime.value =critter.get("catchTime").toString()
+                                                showCard.value = true
+                                            }) {
                                                 Text(critter.get("Name").toString())
                                             }
                                         }
                                     "RarePH" ->
                                         Box(modifier = Modifier.weight(1f).padding(5.dp).height(100.dp).width(100.dp).border(3.dp, Color.Green, RoundedCornerShape(10)), contentAlignment = Alignment.Center){
-                                            Card() {
+                                            Card(onClick = {
+                                                cardName.value = critter.get("Name").toString()
+                                                cardType.value = critter.get("Type").toString()
+                                                cardSteps.value =critter.get("Steps").toString()
+                                                cardDate.value =critter.get("catchDate").toString()
+                                                cardTime.value =critter.get("catchTime").toString()
+                                                showCard.value = true
+                                            }) {
                                                 Text(critter.get("Name").toString())
                                             }
                                         }
                                     "LegendaryPH" ->
                                         Box(modifier = Modifier.weight(1f).padding(5.dp).height(100.dp).width(100.dp).border(3.dp, Color.Yellow, RoundedCornerShape(10)), contentAlignment = Alignment.Center){
-                                            Card() {
+                                            Card(onClick = {
+                                                cardName.value = critter.get("Name").toString()
+                                                cardType.value = critter.get("Type").toString()
+                                                cardSteps.value =critter.get("Steps").toString()
+                                                cardDate.value =critter.get("catchDate").toString()
+                                                cardTime.value =critter.get("catchTime").toString()
+                                                showCard.value = true
+                                            }) {
                                                 Text(critter.get("Name").toString())
                                             }
                                         }
@@ -192,5 +233,48 @@ class CollectionActivity : ComponentActivity() {
                 }
             }
         }
+    }
+    @Composable
+    fun critterCard(name: String,type: String,steps: String,date: String, time: String){
+        ElevatedCard(modifier = Modifier.fillMaxWidth(0.8f).fillMaxHeight(0.7f).offset(y= (-10).dp), elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)) {
+            Row(Modifier.padding(20.dp,10.dp),verticalAlignment = Alignment.CenterVertically) {
+                Text(name)
+                Spacer(modifier = Modifier.weight(1f))
+                IconButton(onClick = {
+                    showCard.value = false
+                    cardName.value =""
+                    cardType.value =""
+                    cardSteps.value =""
+                    cardDate.value =""
+                    cardTime.value =""
+                }) {
+                    Icon(Icons.Default.Close,"Close")
+                }
+            }
+            Row(Modifier.fillMaxWidth().fillMaxHeight(0.5f).padding(horizontal = 20.dp)) {
+                Box(Modifier.fillMaxWidth().fillMaxHeight().border(3.dp,Color.White)) {
+
+                }
+            }
+            Row(Modifier.padding(20.dp, 10.dp)) {
+                Text(type)
+            }
+            Box(Modifier.padding(20.dp,5.dp).fillMaxSize()) {
+                Column() {
+                    Row() {
+                        Text("Steps: $steps")
+                    }
+                    Row() {
+                        Text("Catch Date: $date")
+
+                    }
+                    Row() {
+                        Text("Time: $time")
+                    }
+                }
+            }
+
+        }
+
     }
 }

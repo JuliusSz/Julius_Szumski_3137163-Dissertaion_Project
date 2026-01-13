@@ -127,7 +127,7 @@ class CollectionActivity : ComponentActivity() {
                     CritterList(this,innerPadding)
                     if(showCard.value){
                         Box(Modifier.fillMaxSize().zIndex(1f), contentAlignment = Alignment.Center) {
-                            critterCard(cardName.value,cardType.value,cardSteps.value,cardDate.value,cardTime.value)
+                            CritterCard(cardName.value,cardType.value,cardSteps.value,cardDate.value,cardTime.value)
                         }
                     }
                 }
@@ -235,7 +235,7 @@ class CollectionActivity : ComponentActivity() {
         }
     }
     @Composable
-    fun critterCard(name: String,type: String,steps: String,date: String, time: String){
+    fun CritterCard(name: String,type: String,steps: String,date: String, time: String){
         ElevatedCard(modifier = Modifier.fillMaxWidth(0.8f).fillMaxHeight(0.7f).offset(y= (-10).dp), elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)) {
             Row(Modifier.padding(20.dp,10.dp),verticalAlignment = Alignment.CenterVertically) {
                 Text(name)

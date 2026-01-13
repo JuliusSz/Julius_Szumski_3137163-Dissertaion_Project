@@ -30,6 +30,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -78,9 +79,8 @@ class PlayerSearchActivity : ComponentActivity() {
                 if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
                     missingPermissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
 
-
                 if (missingPermissions.isNotEmpty()) {
-                    requestPermissions(missingPermissions.toTypedArray(), 2)
+                    BLEPermissions.launch(missingPermissions.toTypedArray())
                 } else {
                     initBLE()
                 }
@@ -106,7 +106,8 @@ class PlayerSearchActivity : ComponentActivity() {
                             searching.value=true
                             searchButtonColor.value = Color.Cyan
 
-                            BLEadvert.startAdvertising(BLEadvSettings,ComData,object : AdvertiseCallback(){})
+                            BLEadvert.startAdvertising(BLEadvSettings,ComData,object : AdvertiseCallback(){
+                            })
                             BLEscanner.startScan(listOf(scanFilter),BLEscanSettings,object : ScanCallback(){
                                 @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
                                 override fun onScanResult(callbackType: Int, result: ScanResult) {
@@ -199,6 +200,7 @@ class PlayerSearchActivity : ComponentActivity() {
         userID.value = intent.getStringExtra("userToken").toString()
     }
 
+
     @Composable
     fun foundPlayersList(context: Context, padding: PaddingValues){
         LazyColumn(verticalArrangement = Arrangement.Center,
@@ -229,7 +231,7 @@ class PlayerSearchActivity : ComponentActivity() {
         }
     }
 
-
+    //TODO needs to be Un-depricated
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun initBLE() {
         blManager =  getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
@@ -311,8 +313,6 @@ class PlayerSearchActivity : ComponentActivity() {
             }
 
 
-
-
             @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             override fun onCharacteristicWrite(
                 gatt: BluetoothGatt,
@@ -325,10 +325,10 @@ class PlayerSearchActivity : ComponentActivity() {
         }
         Toast.makeText(this@PlayerSearchActivity,"successfully initialized", Toast.LENGTH_SHORT).show()
     }
-    //GattServer manages Bluetooth Conection (reciever will act as server)
+    //GattServer manages Bluetooth Conection (reciever will act as server, while sender will act as client)
     //https://www.uuidgenerator.net
     val BLEIdentifier: UUID = UUID.fromString("ea86a980-7185-4e52-a37a-11e915c015c8") // Identifies The BLE "frequency" to other devices running the app
-    val HandshakeIdentifier: UUID = UUID.fromString("12a0b2fa-d7c0-4090-9287-a8a1903fb410") // Identifies The exchanged PlayerID as the Data that the other device scans for
+    val HandshakeIdentifier: UUID = UUID.fromString("12a0b2fa-d7c0-4090-9287-a8a1903fb410") // Identifies The Gatt server that is beeing communicated with
     lateinit var blManager: BluetoothManager
     lateinit var blAdapter : BluetoothAdapter
 
@@ -353,15 +353,13 @@ class PlayerSearchActivity : ComponentActivity() {
     lateinit var gattCallback: BluetoothGattCallback
 
 
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 2) {
-            if (grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
-                initBLE()
-            } else {
-                Toast.makeText(this, "BLE permissions are required", Toast.LENGTH_LONG).show()
-            }
+    private val BLEPermissions = this.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {permissions ->
+        val allGranted = permissions.values.all { it }
+
+        if (allGranted) {
+            initBLE()
+        } else {
+            Toast.makeText(this, "Permission has not been granted",Toast.LENGTH_SHORT).show()
         }
     }
 

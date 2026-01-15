@@ -1,11 +1,13 @@
 package com.example.julius_szumski_3137163_dissertaion_project
 
 import android.Manifest
+import android.R.attr.checked
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattServer
 import android.bluetooth.BluetoothGattServerCallback
 import android.bluetooth.BluetoothGattService
@@ -31,6 +33,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -51,15 +54,20 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.core.app.ActivityCompat
 import com.example.julius_szumski_3137163_dissertaion_project.ui.theme.Julius_Szumski_3137163Dissertaion_ProjectTheme
+import kotlinx.coroutines.delay
 import java.util.UUID
+import kotlin.random.Random
 
 @ExperimentalMaterial3Api
 class PlayerSearchActivity : ComponentActivity() {
@@ -88,6 +96,19 @@ class PlayerSearchActivity : ComponentActivity() {
                 initBLE()
             }
 
+            //This ensures that 1 Device acts as the Server and one as the client
+            LaunchedEffect(Unit) {
+                while(true){
+                    if (adv.value){
+                        adv.value = false
+                    }else{
+                        adv.value = true
+                    }
+                    val delayTime = Random.nextInt(3000,10000).toLong()
+                    delay(delayTime)
+                }
+            }
+
 
             Julius_Szumski_3137163Dissertaion_ProjectTheme {
                 Scaffold(modifier = Modifier.fillMaxSize(),
@@ -98,34 +119,29 @@ class PlayerSearchActivity : ComponentActivity() {
                             }
                         })
                     },
-                    floatingActionButton = { FloatingActionButton(onClick = {
+                    floatingActionButton = {
+                        FloatingActionButton(onClick = {
                         if(searching.value){
                             searching.value=false
                             searchButtonColor.value = Color.Magenta
+                            BLEadvert.stopAdvertising(advertiseCallback)
+                            BLEscanner.stopScan(scanCallback)
                         }else{
                             searching.value=true
                             searchButtonColor.value = Color.Cyan
 
-                            BLEadvert.startAdvertising(BLEadvSettings,ComData,object : AdvertiseCallback(){
-                            })
-                            BLEscanner.startScan(listOf(scanFilter),BLEscanSettings,object : ScanCallback(){
-                                @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
-                                override fun onScanResult(callbackType: Int, result: ScanResult) {
-                                    BLEscanner.stopScan(this)
-                                    result.device.connectGatt(this@PlayerSearchActivity, false, gattCallback
-                                    )
-                                }
-                            })
-
+                            if(adv.value){
+                                BLEscanner.stopScan(scanCallback)
+                                BLEadvert.startAdvertising(BLEadvSettings,ComData,advertiseCallback)
+                            }else{
+                                BLEadvert.stopAdvertising(advertiseCallback)
+                                BLEscanner.startScan(listOf(scanFilter),BLEscanSettings,scanCallback)
+                            }
                         }
 
-                    }, containerColor = searchButtonColor.value){
-                        Icon(
-                            Icons.Filled.AddCircle,
-                            contentDescription ="searchButton",
-                            tint = Color.Black
-                        )
-                    }},
+                        }, containerColor = searchButtonColor.value){
+                        Icon(Icons.Filled.AddCircle, contentDescription ="searchButton", tint = Color.Black)
+                    } },
                     floatingActionButtonPosition = FabPosition.Center,
                     bottomBar = {
                         BottomAppBar(actions = {
@@ -171,25 +187,13 @@ class PlayerSearchActivity : ComponentActivity() {
                     }
 
                 ) { innerPadding ->
-                    /**
-                    if(searching.value){
-                        Text(
-                            text = "You are currently searching for Players in your surrounding",
-                            modifier = Modifier.padding(innerPadding)
-                        )
-                    }else{
-                        Text(
-                            text = "You are not searching for Players at the moment",
-                            modifier = Modifier.padding(innerPadding)
-                        )
-                    }
-                    **/
                     foundPlayersList(this,innerPadding)
 
                 }
             }
         }
     }
+    private val adv = mutableStateOf(false)
     private val searchButtonColor = mutableStateOf<Color>(Color.Magenta)
     private val searching = mutableStateOf<Boolean>(false)
     private  val userID = mutableStateOf<String>("")
@@ -209,6 +213,14 @@ class PlayerSearchActivity : ComponentActivity() {
                 .padding(padding)
                 .fillMaxWidth()
         ){
+            item(){
+                Switch(
+                    checked = adv.value,
+                    onCheckedChange = {
+                        adv.value = it
+                    }
+                )
+            }
             if(searching.value){
 
                 if (foundPlayer.size == 0 ){
@@ -231,13 +243,19 @@ class PlayerSearchActivity : ComponentActivity() {
         }
     }
 
-    //TODO needs to be Un-depricated
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun initBLE() {
         blManager =  getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
         blAdapter= blManager.adapter
         BLEadvert = blAdapter.bluetoothLeAdvertiser
         BLEscanner= blAdapter.bluetoothLeScanner
+        scanCallback = object : ScanCallback(){
+            @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
+            override fun onScanResult(callbackType: Int, result: ScanResult) {
+                BLEscanner.stopScan(this)
+                result.device.connectGatt(this@PlayerSearchActivity, false, gattCallback)
+            }
+        }
 
         gatt = blManager.openGattServer(this, object:BluetoothGattServerCallback(){
             @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -250,19 +268,15 @@ class PlayerSearchActivity : ComponentActivity() {
                 offset: Int,
                 value: ByteArray
             ) {
+
                 val msg = String(value)
-
+                //runOnUiThread {
+                 //   Toast.makeText(this@PlayerSearchActivity,"msgRecieved $msg",Toast.LENGTH_SHORT).show()
+                //}
                 if (msg == "HELLO") {
-                    characteristic.value = "ACK".toByteArray()
+                    gatt.notifyCharacteristicChanged(device, characteristic, false, "ACK".toByteArray())
+                    gatt.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, null)
                 }
-
-                gatt.sendResponse(
-                    device,
-                    requestId,
-                    BluetoothGatt.GATT_SUCCESS,
-                    0,
-                    characteristic.value
-                )
             }
             @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             override fun onCharacteristicReadRequest(
@@ -279,36 +293,78 @@ class PlayerSearchActivity : ComponentActivity() {
                     characteristic.value
                 )
             }
+            @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+            override fun onDescriptorWriteRequest(
+                device: BluetoothDevice,
+                requestId: Int,
+                descriptor: BluetoothGattDescriptor,
+                preparedWrite: Boolean,
+                responseNeeded: Boolean,
+                offset: Int,
+                value: ByteArray
+            ) {
+                if (descriptor.uuid == NotificationIdentifier &&
+                    value.contentEquals(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
+                ) {
+                    gatt.sendResponse(
+                        device,requestId,BluetoothGatt.GATT_SUCCESS,offset,null
+                    )
+                }
+            }
         })
         gatt.addService(service)
         gattCallback = object : BluetoothGattCallback(){
-
             @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
                 if (newState == BluetoothProfile.STATE_CONNECTED) {
                     gatt!!.discoverServices()
                 }
             }
-
-            @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-            override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int){
-                val characteristic = gatt!!.getService(BLEIdentifier).getCharacteristic(HandshakeIdentifier)
-                characteristic.value = "HELLO".toByteArray()
-                gatt.writeCharacteristic(characteristic)
-            }
-
-            override fun onCharacteristicRead(
+            //https://issuetracker.google.com/issues/280288203
+            override fun onCharacteristicChanged(
                 gatt: BluetoothGatt,
                 characteristic: BluetoothGattCharacteristic,
-                status: Int
+                value: ByteArray
             ) {
-                val response = String(characteristic.value)
+                //runOnUiThread {
+                //Toast.makeText(this@PlayerSearchActivity,"onCharacterisiticChanged",Toast.LENGTH_SHORT).show()
+                // }
+                val response = String(value)
                 if(response == "ACK"){
                     runOnUiThread {
                         Toast.makeText(this@PlayerSearchActivity,"Conection Established",Toast.LENGTH_SHORT).show()
 
                     }
 
+                }else{
+                    //runOnUiThread {
+                    //Toast.makeText(this@PlayerSearchActivity,"Bozo $response",Toast.LENGTH_SHORT).show()
+                    //}
+                }
+
+            }
+
+            @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+            override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
+                val characteristic = gatt.getService(BLEIdentifier).getCharacteristic(HandshakeIdentifier)
+
+                gatt.setCharacteristicNotification(characteristic, true)
+
+                val cccd = characteristic.getDescriptor(NotificationIdentifier)
+
+                gatt.writeDescriptor(cccd,BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
+
+            }
+            @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+            override fun onDescriptorWrite(
+                gatt: BluetoothGatt,
+                descriptor: BluetoothGattDescriptor,
+                status: Int
+            ) {
+                if (descriptor.characteristic.uuid == HandshakeIdentifier) {
+                    val characteristic = descriptor.characteristic
+                    gatt.writeCharacteristic(characteristic, "HELLO".toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+                    )
                 }
             }
 
@@ -322,17 +378,30 @@ class PlayerSearchActivity : ComponentActivity() {
                 gatt.readCharacteristic(characteristic)
             }
 
+
         }
-        Toast.makeText(this@PlayerSearchActivity,"successfully initialized", Toast.LENGTH_SHORT).show()
+        //Toast.makeText(this@PlayerSearchActivity,"successfully initialized", Toast.LENGTH_SHORT).show()
     }
     //GattServer manages Bluetooth Conection (reciever will act as server, while sender will act as client)
     //https://www.uuidgenerator.net
     val BLEIdentifier: UUID = UUID.fromString("ea86a980-7185-4e52-a37a-11e915c015c8") // Identifies The BLE "frequency" to other devices running the app
     val HandshakeIdentifier: UUID = UUID.fromString("12a0b2fa-d7c0-4090-9287-a8a1903fb410") // Identifies The Gatt server that is beeing communicated with
+    val NotificationIdentifier: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
     lateinit var blManager: BluetoothManager
     lateinit var blAdapter : BluetoothAdapter
+    lateinit var scanCallback: ScanCallback
+    var advertiseCallback = object: AdvertiseCallback(){}
 
-    val handshakeID = BluetoothGattCharacteristic(HandshakeIdentifier,BluetoothGattCharacteristic.PROPERTY_READ or BluetoothGattCharacteristic.PROPERTY_WRITE, BluetoothGattCharacteristic.PERMISSION_READ or BluetoothGattCharacteristic.PERMISSION_WRITE)
+    val handshakeID = BluetoothGattCharacteristic(HandshakeIdentifier, BluetoothGattCharacteristic.PROPERTY_READ or BluetoothGattCharacteristic.PROPERTY_WRITE or BluetoothGattCharacteristic.PROPERTY_NOTIFY, BluetoothGattCharacteristic.PERMISSION_READ or BluetoothGattCharacteristic.PERMISSION_WRITE
+    ).apply {
+        //cccd stands for Client Characteristic Configuration Descriptor.
+        //https://devzone.nordicsemi.com/f/nordic-q-a/561/what-does-cccd-mean
+        //defines what packets the Server can send to the client
+        val cccd = BluetoothGattDescriptor(NotificationIdentifier, BluetoothGattDescriptor.PERMISSION_READ or BluetoothGattDescriptor.PERMISSION_WRITE
+        )
+        addDescriptor(cccd)
+    }
+
     val service = BluetoothGattService(BLEIdentifier, BluetoothGattService.SERVICE_TYPE_PRIMARY).apply {
         addCharacteristic(handshakeID)
     }
@@ -359,7 +428,7 @@ class PlayerSearchActivity : ComponentActivity() {
         if (allGranted) {
             initBLE()
         } else {
-            Toast.makeText(this, "Permission has not been granted",Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "You need to give Permission for this to work",Toast.LENGTH_SHORT).show()
         }
     }
 

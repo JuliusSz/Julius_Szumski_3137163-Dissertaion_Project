@@ -301,6 +301,7 @@ class PlayerSearchActivity : ComponentActivity() {
                     runOnUiThread {
                         Toast.makeText(this@PlayerSearchActivity,"ACK sent",Toast.LENGTH_SHORT).show()
                     }
+                    startActivityIfNeeded(Intent(this@PlayerSearchActivity, TradeActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT).putExtra("userToken",userID.value ),0)
                 }
             }
             @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -360,6 +361,7 @@ class PlayerSearchActivity : ComponentActivity() {
                     runOnUiThread {
                         Toast.makeText(this@PlayerSearchActivity,"Conection Established",Toast.LENGTH_SHORT).show()
                     }
+                    startActivityIfNeeded(Intent(this@PlayerSearchActivity, TradeActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT).putExtra("userToken",userID.value ),0)
                 }else{
                     //runOnUiThread {
                     //Toast.makeText(this@PlayerSearchActivity,"Bozo $response",Toast.LENGTH_SHORT).show()

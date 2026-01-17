@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.julius_szumski_3137163_dissertaion_project"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.example.julius_szumski_3137163_dissertaion_project">
 
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
-
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -22,6 +21,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Julius_Szumski_3137163Dissertaion_Project">
+        <activity
+            android:name=".TradeActivity"
+            android:exported="false"
+            android:label="@string/title_activity_trade"
+            android:theme="@style/Theme.Julius_Szumski_3137163Dissertaion_Project" />
         <activity
             android:name=".LogIn"
             android:exported="true"
@@ -47,9 +51,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Julius_Szumski_3137163Dissertaion_Project">
-
-        </activity>
+            android:theme="@style/Theme.Julius_Szumski_3137163Dissertaion_Project" />
     </application>
 
 </manifest>

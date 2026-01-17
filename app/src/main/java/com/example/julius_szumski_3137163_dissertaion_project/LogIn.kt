@@ -9,6 +9,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.text.input.KeyboardType
@@ -54,7 +56,7 @@ class LogIn : ComponentActivity() {
         setContent {
             Julius_Szumski_3137163Dissertaion_ProjectTheme {
                 Scaffold(modifier = Modifier.fillMaxSize(),) { innerPadding ->
-                    Column(modifier = Modifier.padding(innerPadding)) {
+                    Column(modifier = Modifier.padding(innerPadding),horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                         Row(Modifier.padding(50.dp)) {
                             TextField(
                                 value = email.value,

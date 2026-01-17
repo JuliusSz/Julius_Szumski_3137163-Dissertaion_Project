@@ -121,12 +121,13 @@ class PlayerSearchActivity : ComponentActivity() {
                     },
                     floatingActionButton = {
                         FloatingActionButton(onClick = {
-                        if(searching.value){
+                        if(searching.value == true){
+                            role.value = BLERole.Unclear
                             searching.value=false
                             searchButtonColor.value = Color.Magenta
                             BLEadvert.stopAdvertising(advertiseCallback)
                             BLEscanner.stopScan(scanCallback)
-                            role.value = BLERole.Unclear
+
                         }else{
                             searching.value=true
                             searchButtonColor.value = Color.Cyan
@@ -359,7 +360,6 @@ class PlayerSearchActivity : ComponentActivity() {
                     runOnUiThread {
                         Toast.makeText(this@PlayerSearchActivity,"Conection Established",Toast.LENGTH_SHORT).show()
                     }
-                    searching.value = false
                 }else{
                     //runOnUiThread {
                     //Toast.makeText(this@PlayerSearchActivity,"Bozo $response",Toast.LENGTH_SHORT).show()

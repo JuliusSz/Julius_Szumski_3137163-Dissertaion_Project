@@ -62,6 +62,7 @@ class LogIn : ComponentActivity() {
                                 value = email.value,
                                 onValueChange = { email.value = it },
                                 label = { Text("Email") }
+
                             )
                         }
                         Row(Modifier.padding(50.dp, 0.dp)) {

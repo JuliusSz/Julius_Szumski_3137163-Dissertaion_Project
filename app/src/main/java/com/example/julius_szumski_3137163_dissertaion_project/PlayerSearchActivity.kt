@@ -28,6 +28,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.ParcelUuid
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -65,9 +66,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.core.app.ActivityCompat
 import com.example.julius_szumski_3137163_dissertaion_project.ui.theme.Julius_Szumski_3137163Dissertaion_ProjectTheme
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.SetOptions
+import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.delay
+import org.checkerframework.checker.units.qual.s
+import java.security.SecureRandom
 import java.util.UUID
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.random.Random
+import kotlin.random.nextLong
 
 @ExperimentalMaterial3Api
 class PlayerSearchActivity : ComponentActivity() {
@@ -203,9 +212,25 @@ class PlayerSearchActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         userID.value = intent.getStringExtra("userToken").toString()
+
+        db.collection("users").document(userID.value).collection("BLEID").get().addOnSuccessListener {
+            result->
+
+            if(result.isEmpty){
+                val shortID= userID.value.take(16)//shortens the userID to a BLE comfortable size
+                val dbIDMap = mapOf("BLEID" to shortID)
+
+                db.collection("users").document(userID.value).update(dbIDMap)
+                bleID.value= shortID
+                Toast.makeText(this@PlayerSearchActivity,shortID,Toast.LENGTH_SHORT).show()
+            }else{
+                bleID.value = result.toString()
+                Toast.makeText(this@PlayerSearchActivity,result.toString(),Toast.LENGTH_SHORT).show()
+            }
+        }
     }
-
-
+    val db = Firebase.firestore
+    val bleID = mutableStateOf("")
     @Composable
     fun foundPlayersList(context: Context, padding: PaddingValues){
         LazyColumn(verticalArrangement = Arrangement.Center,
@@ -244,6 +269,7 @@ class PlayerSearchActivity : ComponentActivity() {
         }
     }
 
+    @OptIn(ExperimentalEncodingApi::class)
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun initBLE() {
         blManager =  getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
@@ -295,14 +321,45 @@ class PlayerSearchActivity : ComponentActivity() {
                 //runOnUiThread {
                  //   Toast.makeText(this@PlayerSearchActivity,"msgRecieved $msg",Toast.LENGTH_SHORT).show()
                 //}
-                if (msg == "HELLO") {
-                    gatt.notifyCharacteristicChanged(device, characteristic, false, "ACK".toByteArray())
-                    gatt.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, null)
-                    runOnUiThread {
-                        Toast.makeText(this@PlayerSearchActivity,"ACK sent",Toast.LENGTH_SHORT).show()
+                db.collection("users").whereEqualTo("BLEID",msg).get().addOnSuccessListener{snapshot ->
+                    if (!snapshot.isEmpty) {
+                        val validIDChars = arrayOf('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','0','1','2','3','4','5','6','7','8','9')
+                        val tradeIdList = CharArray(16)
+                        for(i in 0..15){
+
+                            tradeIdList[i] = validIDChars[Random.nextInt(0,(validIDChars.size -1))]
+                        }
+                        val tradeId = String(tradeIdList)
+                        val tradeData = mapOf(
+                            "Player1" to userID.value,
+                            "Player2" to snapshot.elementAt(0).id,
+                            "p1Critter" to "",
+                            "p2Critter" to "",
+                            "p1Confirm" to false,
+                            "p2Confirm" to false,
+                            "tradeComplete" to false,
+                            "tradeCanceled" to false,
+                            "p1Connected" to false,
+                            "p2Connected" to false
+                            )
+                        db.collection("trade").document(tradeId).set(tradeData).addOnSuccessListener {
+                            gatt.notifyCharacteristicChanged(device, characteristic, false, tradeId.toByteArray())
+                            gatt.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, null)
+                        }
+
+                        //runOnUiThread {
+                        //Toast.makeText(this@PlayerSearchActivity,"ACK sent",Toast.LENGTH_SHORT).show()
+                        //}
+                        searching.value = false
+                        startActivityIfNeeded(Intent(this@PlayerSearchActivity, TradeActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT).putExtra("tradeID",tradeId).putExtra("userToken", userID.value),0)
+                    }else{
+                        Log.e("Message",msg)
+                        runOnUiThread {
+                        Toast.makeText(this@PlayerSearchActivity,msg,Toast.LENGTH_SHORT).show()
+                        }
                     }
-                    startActivityIfNeeded(Intent(this@PlayerSearchActivity, TradeActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT).putExtra("userToken",userID.value ),0)
                 }
+
             }
             @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             override fun onCharacteristicReadRequest(
@@ -357,15 +414,18 @@ class PlayerSearchActivity : ComponentActivity() {
                 //Toast.makeText(this@PlayerSearchActivity,"onCharacterisiticChanged",Toast.LENGTH_SHORT).show()
                 // }
                 val response = String(value)
-                if(response == "ACK"){
+                db.collection("trade").document(response).get().addOnSuccessListener{snapshot ->
+                    if(snapshot.exists()){
                     runOnUiThread {
                         Toast.makeText(this@PlayerSearchActivity,"Conection Established",Toast.LENGTH_SHORT).show()
                     }
-                    startActivityIfNeeded(Intent(this@PlayerSearchActivity, TradeActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT).putExtra("userToken",userID.value ),0)
-                }else{
-                    //runOnUiThread {
-                    //Toast.makeText(this@PlayerSearchActivity,"Bozo $response",Toast.LENGTH_SHORT).show()
-                    //}
+                    searching.value = false
+                    startActivityIfNeeded(Intent(this@PlayerSearchActivity, TradeActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT).putExtra("tradeID",response).putExtra("userToken", userID.value),0)
+                    }else{
+                        runOnUiThread {
+                            Toast.makeText(this@PlayerSearchActivity,"smth Went Wrong",Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }
 
             }
@@ -389,7 +449,7 @@ class PlayerSearchActivity : ComponentActivity() {
             ) {
                 if (descriptor.characteristic.uuid == HandshakeIdentifier) {
                     val characteristic = descriptor.characteristic
-                    gatt.writeCharacteristic(characteristic, "HELLO".toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
+                    gatt.writeCharacteristic(characteristic, bleID.value.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
                     runOnUiThread {
                         Toast.makeText(this@PlayerSearchActivity,"Message Sent",Toast.LENGTH_SHORT).show()
                     }

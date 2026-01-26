@@ -17,7 +17,7 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
-        android:label="Critter Collector"
+        android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Julius_Szumski_3137163Dissertaion_Project">
@@ -29,7 +29,6 @@
         <activity
             android:name=".LogIn"
             android:exported="true"
-            android:label="@string/title_activity_log_in"
             android:theme="@style/Theme.Julius_Szumski_3137163Dissertaion_Project">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

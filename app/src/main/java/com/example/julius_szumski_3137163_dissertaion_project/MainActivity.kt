@@ -200,7 +200,7 @@ class MainActivity : ComponentActivity() {
                                     Button(onClick = {
                                         currentSearchStepCount.value = stepsTillNextCritter.value-1
                                     }) {
-                                        Text("Complete Critter search")
+                                        Text("[DEBUG] Complete Critter search")
                                     }
                                 }
                             }
@@ -212,15 +212,15 @@ class MainActivity : ComponentActivity() {
                         Row(){
                             Text(text = "Total steps taken:${TotalStepsTaken.value}")
                         }
-                        Row(){
-                            Text(text = "Steps taken today:${StepsTakenToday.value}")
-                        }
+                        //Row(){
+                            //Text(text = "Steps taken today:${StepsTakenToday.value}")
+                        //}
                         Row(){
                             Text(text = "Critters collected:${nrCrittersCollected.value}")
 
                         }
                         Row(){
-                            Text(text = "Next Critter: ${CurrentCritter.value.toString()}")
+                            Text(text = "[DEBUG]Next Critter: ${CurrentCritter.value.toString()}")
                         }
                     }
                     registerSensors()

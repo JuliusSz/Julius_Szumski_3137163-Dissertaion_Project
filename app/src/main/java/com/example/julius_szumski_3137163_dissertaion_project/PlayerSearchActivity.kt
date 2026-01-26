@@ -209,10 +209,10 @@ class PlayerSearchActivity : ComponentActivity() {
 
                 db.collection("users").document(userID.value).update(dbIDMap)
                 bleID.value= shortID
-                Toast.makeText(this@PlayerSearchActivity,shortID,Toast.LENGTH_SHORT).show()
+                //Toast.makeText(this@PlayerSearchActivity,shortID,Toast.LENGTH_SHORT).show()
             }else{
                 bleID.value = result.toString()
-                Toast.makeText(this@PlayerSearchActivity,result.toString(),Toast.LENGTH_SHORT).show()
+                //Toast.makeText(this@PlayerSearchActivity,result.toString(),Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -263,14 +263,14 @@ class PlayerSearchActivity : ComponentActivity() {
                 }
                 if (blAdapter.address > result.device.address){
                     role.value = BLERole.Server
-                    runOnUiThread {
-                        Toast.makeText(this@PlayerSearchActivity,"I am Server",Toast.LENGTH_SHORT).show()
-                    }
+                    //runOnUiThread {
+                        //Toast.makeText(this@PlayerSearchActivity,"I am Server",Toast.LENGTH_SHORT).show()
+                    //}
                 }else{
                     role.value = BLERole.Client
-                    runOnUiThread {
-                        Toast.makeText(this@PlayerSearchActivity,"I am Client",Toast.LENGTH_SHORT).show()
-                    }
+                    //runOnUiThread {
+                        //Toast.makeText(this@PlayerSearchActivity,"I am Client",Toast.LENGTH_SHORT).show()
+                    //}
                 }
 
 
@@ -397,9 +397,9 @@ class PlayerSearchActivity : ComponentActivity() {
                 val response = String(value)
                 db.collection("trade").document(response).get().addOnSuccessListener{snapshot ->
                     if(snapshot.exists()){
-                    runOnUiThread {
-                        Toast.makeText(this@PlayerSearchActivity,"Conection Established",Toast.LENGTH_SHORT).show()
-                    }
+                    //runOnUiThread {
+                        //Toast.makeText(this@PlayerSearchActivity,"Conection Established",Toast.LENGTH_SHORT).show()
+                    //}
                     searching.value = false
                     startActivityIfNeeded(Intent(this@PlayerSearchActivity, TradeActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT).putExtra("tradeID",response).putExtra("userToken", userID.value),0)
                     }else{

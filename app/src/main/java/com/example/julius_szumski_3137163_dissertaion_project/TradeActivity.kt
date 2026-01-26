@@ -280,7 +280,7 @@ class TradeActivity : ComponentActivity() {
                 if(player.value == Player.player1){
                     if(p1Confirm.value && p2Confirm.value&& tradeComplete.value ==false){
                         trade()
-                        Toast.makeText(this,"I traded", Toast.LENGTH_SHORT).show()
+                        //Toast.makeText(this,"I traded", Toast.LENGTH_SHORT).show()
                     }
                 }
                 if(tradeComplete.value){

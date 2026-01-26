@@ -2,6 +2,8 @@ package com.example.julius_szumski_3137163_dissertaion_project
 
 import android.Manifest
 import android.R.attr.checked
+import android.annotation.SuppressLint
+import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
@@ -104,20 +106,6 @@ class PlayerSearchActivity : ComponentActivity() {
             } else {
                 initBLE()
             }
-            /**
-            //This ensures that 1 Device acts as the Server and one as the client
-            LaunchedEffect(Unit) {
-                while(true){
-                    if (adv.value){
-                        adv.value = false
-                    }else{
-                        adv.value = true
-                    }
-                    val delayTime = Random.nextInt(3000,10000).toLong()
-                    delay(delayTime)
-                }
-            }
-            **/
 
             Julius_Szumski_3137163Dissertaion_ProjectTheme {
                 Scaffold(modifier = Modifier.fillMaxSize(),
@@ -203,7 +191,6 @@ class PlayerSearchActivity : ComponentActivity() {
             }
         }
     }
-    private val adv = mutableStateOf(false)
     private val searchButtonColor = mutableStateOf<Color>(Color.Magenta)
     private val searching = mutableStateOf<Boolean>(false)
     private  val userID = mutableStateOf<String>("")
@@ -239,20 +226,12 @@ class PlayerSearchActivity : ComponentActivity() {
                 .padding(padding)
                 .fillMaxWidth()
         ){
-            item(){
-                Switch(
-                    checked = adv.value,
-                    onCheckedChange = {
-                        adv.value = it
-                    }
-                )
-            }
             if(searching.value){
 
                 if (foundPlayer.size == 0 ){
                     item {
                         Text(
-                            text = "No Players nearby"
+                            text = "Searching..."
                         )
                     }
                 }else{
@@ -361,6 +340,7 @@ class PlayerSearchActivity : ComponentActivity() {
                 }
 
             }
+            /*
             @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             override fun onCharacteristicReadRequest(
                 device: BluetoothDevice,
@@ -376,6 +356,7 @@ class PlayerSearchActivity : ComponentActivity() {
                     characteristic.value
                 )
             }
+            */
             @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
             override fun onDescriptorWriteRequest(
                 device: BluetoothDevice,
@@ -403,7 +384,7 @@ class PlayerSearchActivity : ComponentActivity() {
                     gatt!!.discoverServices()
                 }
             }
-            //https://issuetracker.google.com/issues/280288203
+
             @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_ADVERTISE, Manifest.permission.BLUETOOTH_SCAN])
             override fun onCharacteristicChanged(
                 gatt: BluetoothGatt,
@@ -450,9 +431,9 @@ class PlayerSearchActivity : ComponentActivity() {
                 if (descriptor.characteristic.uuid == HandshakeIdentifier) {
                     val characteristic = descriptor.characteristic
                     gatt.writeCharacteristic(characteristic, bleID.value.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
-                    runOnUiThread {
-                        Toast.makeText(this@PlayerSearchActivity,"Message Sent",Toast.LENGTH_SHORT).show()
-                    }
+                    //runOnUiThread {
+                      //  Toast.makeText(this@PlayerSearchActivity,"Message Sent",Toast.LENGTH_SHORT).show()
+                    //}
                 }
             }
 
@@ -512,7 +493,8 @@ class PlayerSearchActivity : ComponentActivity() {
     lateinit var gattCallback: BluetoothGattCallback
 
 
-    private val BLEPermissions = this.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {permissions ->
+    @SuppressLint("MissingPermission")//this Permission is checked for I dont know why it shows up as an error
+    private val BLEPermissions = this.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
         val allGranted = permissions.values.all { it }
 
         if (allGranted) {
@@ -525,6 +507,11 @@ class PlayerSearchActivity : ComponentActivity() {
         Unclear,
         Client,
         Server,
+    }
+
+    override fun onPause() {
+        super.onPause()
+        finish()
     }
 
 }

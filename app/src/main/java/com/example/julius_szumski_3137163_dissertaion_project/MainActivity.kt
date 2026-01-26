@@ -93,6 +93,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
             //Stack overflow end
+            if(critterSearching.value){
+                searchButtonColor.value = Color.Red
+            }else {
+                searchButtonColor.value = Color.Green
+            }
 
             Julius_Szumski_3137163Dissertaion_ProjectTheme {
                 Scaffold(modifier = Modifier.fillMaxSize(),
@@ -215,7 +220,7 @@ class MainActivity : ComponentActivity() {
 
                         }
                         Row(){
-                            Text(text = "Players met:${nrPlayersMet.value}")
+                            Text(text = "Next Critter: ${CurrentCritter.value.toString()}")
                         }
                     }
                     registerSensors()
@@ -241,6 +246,7 @@ class MainActivity : ComponentActivity() {
             put("TODAYSSTEPS",StepsTakenToday.value)
             put("TOTALSTEPS",TotalStepsTaken.value)
             put("USERTOKEN",userID.value)
+            put("CURRENTCRITTER",CurrentCritter.value.toString())
 
         }
         LocalDBHelperStats(this,"Stats",null,1).writableDatabase.insert("Stats",null,tempList)
@@ -278,6 +284,7 @@ class MainActivity : ComponentActivity() {
 
 
 
+
     private fun registerSensors(){
         val sm: SensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
 
@@ -292,7 +299,9 @@ class MainActivity : ComponentActivity() {
 
         override fun onSensorChanged(p0: SensorEvent?) {
             StepsTakenToday.value++
-            currentSearchStepCount.value++
+            if(critterSearching.value){
+                currentSearchStepCount.value++
+            }
             TotalStepsTaken.value++
             //Toast.makeText(this@MainActivity,"Step!",Toast.LENGTH_SHORT).show()
         }
@@ -300,9 +309,10 @@ class MainActivity : ComponentActivity() {
     }
     //retrieves the last game state from the sqlite Database
     private fun retrieveStats(dbHelperStats: SQLiteDatabase){
+        //dbHelperStats.execSQL("DROP TABLE IF EXISTS Stats")
 
         val tableName: String = "Stats"
-        val columns: Array<String> = arrayOf("ID","CURRENTSTEPSSEARCH","CURRENTSTEPSGOAL","TODAYSSTEPS","TOTALSTEPS")
+        val columns: Array<String> = arrayOf("ID","CURRENTSTEPSSEARCH","CURRENTSTEPSGOAL","TODAYSSTEPS","TOTALSTEPS","CURRENTCRITTER")
         var cursor: Cursor = dbHelperStats.query(tableName,columns,"USERTOKEN = ?",arrayOf(userID.value),null,null,"ID DESC")
         if (cursor.count>0){
             cursor.moveToFirst()
@@ -310,6 +320,7 @@ class MainActivity : ComponentActivity() {
             stepsTillNextCritter.value = cursor.getInt(2)
             StepsTakenToday.value = cursor.getInt(3)
             TotalStepsTaken.value= cursor.getInt(4)
+            CurrentCritter.value = convertStringToCritter(cursor.getString(5))
             //Toast.makeText(this@MainActivity,"stats retrieved!",Toast.LENGTH_SHORT).show()
         }
     }
@@ -337,6 +348,14 @@ class MainActivity : ComponentActivity() {
         db.collection("users").document(userID.value).update("CritterCollection",collectedCritter.toList())
         db.collection("critter").document(Id.toString()).set(collectedCritterHsh)
         nrCrittersCollected.value = collectedCritter.size
+    }
+    fun convertStringToCritter(cString: String): CritterType{
+        when(cString){
+            "CommonPH" -> return CritterType.CommonPH
+            "RarePH" -> return CritterType.RarePH
+            "LegendaryPH" -> return CritterType.LegendaryPH
+            else -> return CritterType.None
+        }
     }
 }
 

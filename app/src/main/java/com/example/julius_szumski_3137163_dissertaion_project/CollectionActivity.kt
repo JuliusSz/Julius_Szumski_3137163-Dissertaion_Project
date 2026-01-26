@@ -1,6 +1,6 @@
 package com.example.julius_szumski_3137163_dissertaion_project
 
-import android.R
+import com.example.julius_szumski_3137163_dissertaion_project.R
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -53,6 +54,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.example.julius_szumski_3137163_dissertaion_project.ui.theme.Julius_Szumski_3137163Dissertaion_ProjectTheme
@@ -145,7 +147,7 @@ class CollectionActivity : ComponentActivity() {
             critterCollection.addAll(docs)
             critterCount.value = critterCollection.size
         }
-        Toast.makeText(this,critterCollection.size.toString(), Toast.LENGTH_SHORT).show()
+        //Toast.makeText(this,critterCollection.size.toString(), Toast.LENGTH_SHORT).show()
     }
     private  val userID = mutableStateOf<String>("")
     private var critterCollection= mutableListOf<DocumentSnapshot>()
@@ -189,8 +191,9 @@ class CollectionActivity : ComponentActivity() {
                                                 cardTime.value =critter.get("catchTime").toString()
                                                 showCard.value = true
                                             }) {
-                                                Text(critter.get("Name").toString())
+                                                Image(painter = painterResource(R.drawable.bedbug), contentDescription = "bedbug")
                                             }
+                                            Text(critter.get("Name").toString())
                                         }
                                     "RarePH" ->
                                         Box(modifier = Modifier.weight(1f).padding(5.dp).height(100.dp).width(100.dp).border(3.dp, Color.Green, RoundedCornerShape(10)), contentAlignment = Alignment.Center){
@@ -202,8 +205,9 @@ class CollectionActivity : ComponentActivity() {
                                                 cardTime.value =critter.get("catchTime").toString()
                                                 showCard.value = true
                                             }) {
-                                                Text(critter.get("Name").toString())
+                                                Image(painter = painterResource(R.drawable.stickbug), contentDescription = "stickbug")
                                             }
+                                            Text(critter.get("Name").toString())
                                         }
                                     "LegendaryPH" ->
                                         Box(modifier = Modifier.weight(1f).padding(5.dp).height(100.dp).width(100.dp).border(3.dp, Color.Yellow, RoundedCornerShape(10)), contentAlignment = Alignment.Center){
@@ -215,8 +219,9 @@ class CollectionActivity : ComponentActivity() {
                                                 cardTime.value =critter.get("catchTime").toString()
                                                 showCard.value = true
                                             }) {
-                                                Text(critter.get("Name").toString())
+                                                Image(painter = painterResource(R.drawable.codebug), contentDescription = "codebug")
                                             }
+                                            Text(critter.get("Name").toString())
                                         }
                                 }
 
@@ -253,7 +258,20 @@ class CollectionActivity : ComponentActivity() {
             }
             Row(Modifier.fillMaxWidth().fillMaxHeight(0.5f).padding(horizontal = 20.dp)) {
                 Box(Modifier.fillMaxWidth().fillMaxHeight().border(3.dp,Color.White)) {
-
+                    when (cardName.value){
+                        "Bed-Bug"->{
+                            Image(painter = painterResource(R.drawable.bedbug), contentDescription = "bedbug",
+                                Modifier.fillMaxSize())
+                        }
+                        "Stick-Bug"->{
+                            Image(painter = painterResource(R.drawable.stickbug), contentDescription = "stickbug",
+                                Modifier.fillMaxSize())
+                        }
+                        "Code-Bug"->{
+                            Image(painter = painterResource(R.drawable.codebug), contentDescription = "codebug",
+                                Modifier.fillMaxSize())
+                        }
+                    }
                 }
             }
             Row(Modifier.padding(20.dp, 10.dp)) {

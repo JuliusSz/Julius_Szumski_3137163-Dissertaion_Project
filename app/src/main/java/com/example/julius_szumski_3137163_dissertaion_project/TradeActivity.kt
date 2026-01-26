@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,8 +44,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.example.julius_szumski_3137163_dissertaion_project.ui.theme.Julius_Szumski_3137163Dissertaion_ProjectTheme
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.DocumentSnapshot
@@ -100,7 +103,21 @@ class TradeActivity : ComponentActivity() {
                                     showSelecionCard.value = true
                                 }) {
                                     if(SelectedCritter.value != null){
-                                        Text(SelectedCritter.value!!.get("Name").toString())
+                                        //Text(SelectedCritter.value!!.get("Name").toString())
+                                        when (SelectedCritter.value!!.get("Name").toString()){
+                                            "Bed-Bug"->{
+                                                Image(painter = painterResource(R.drawable.bedbug), contentDescription = "bedbug",
+                                                    Modifier.fillMaxSize())
+                                            }
+                                            "Stick-Bug"->{
+                                                Image(painter = painterResource(R.drawable.stickbug), contentDescription = "stickbug",
+                                                    Modifier.fillMaxSize())
+                                            }
+                                            "Code-Bug"->{
+                                                Image(painter = painterResource(R.drawable.codebug), contentDescription = "codebug",
+                                                    Modifier.fillMaxSize())
+                                            }
+                                        }
                                     }else{
                                         Text("No Critter Selected yet")
                                     }
@@ -123,7 +140,21 @@ class TradeActivity : ComponentActivity() {
                             )
                             {
                                 if(otherSelectedCritter.value != null){
-                                    Text(otherSelectedCritter.value!!.get("Name").toString())
+                                    //Text(otherSelectedCritter.value!!.get("Name").toString())
+                                    when (otherSelectedCritter.value!!.get("Name").toString()){
+                                        "Bed-Bug"->{
+                                            Image(painter = painterResource(R.drawable.bedbug), contentDescription = "bedbug",
+                                                Modifier.fillMaxSize())
+                                        }
+                                        "Stick-Bug"->{
+                                            Image(painter = painterResource(R.drawable.stickbug), contentDescription = "stickbug",
+                                                Modifier.fillMaxSize())
+                                        }
+                                        "Code-Bug"->{
+                                            Image(painter = painterResource(R.drawable.codebug), contentDescription = "codebug",
+                                                Modifier.fillMaxSize())
+                                        }
+                                    }
                                 }else{
                                     Text("No Critter Selected yet")
                                 }
@@ -137,7 +168,7 @@ class TradeActivity : ComponentActivity() {
                                 }else{
                                     db.collection("trade").document(tradeID.value).update(mapOf("p2Confirm" to true))
                                 }
-                            }) {
+                            },enabled= confirmAvailable.value) {
                                 Text("Confirm")
                             }
                         }
@@ -145,7 +176,9 @@ class TradeActivity : ComponentActivity() {
 
                     }
                     if (showSelecionCard.value){
-                        SelectionCard()
+                        Box(Modifier.fillMaxSize().zIndex(1f), contentAlignment = Alignment.Center) {
+                            SelectionCard()
+                        }
                     }
                 }
             }
@@ -170,6 +203,7 @@ class TradeActivity : ComponentActivity() {
     val tradeCanceled =  mutableStateOf(false)
     val p1Connected = mutableStateOf(false)
     val p2Connected = mutableStateOf(false)
+    val confirmAvailable = mutableStateOf(false)
 
     override fun onResume() {
         super.onResume()
@@ -209,7 +243,6 @@ class TradeActivity : ComponentActivity() {
             }else{
                 Toast.makeText(this,"Something went wrong", Toast.LENGTH_SHORT).show()
             }
-
         }
         db.collection("trade").document(tradeID.value).addSnapshotListener {
             documentSnapshot , e ->
@@ -241,10 +274,13 @@ class TradeActivity : ComponentActivity() {
                         otherSelectedCritter.value = critter
                     }
                 }
-
+                if(p1Critter.value.isNotBlank() && p2Critter.value.isNotBlank() && !confirmAvailable.value){
+                    confirmAvailable.value = true
+                }
                 if(player.value == Player.player1){
-                    if(p1Confirm.value && p2Confirm.value){
+                    if(p1Confirm.value && p2Confirm.value&& tradeComplete.value ==false){
                         trade()
+                        Toast.makeText(this,"I traded", Toast.LENGTH_SHORT).show()
                     }
                 }
                 if(tradeComplete.value){
@@ -327,7 +363,8 @@ class TradeActivity : ComponentActivity() {
                                                     }
                                                     showSelecionCard.value = false
                                                 }) {
-                                                    Text(critter.get("Name").toString())
+                                                    Image(painter = painterResource(R.drawable.bedbug), contentDescription = "bedbug",
+                                                        Modifier.fillMaxSize())
                                                 }
                                             }
                                         "RarePH" ->
@@ -352,7 +389,8 @@ class TradeActivity : ComponentActivity() {
                                                     }
                                                     showSelecionCard.value = false
                                                 }) {
-                                                    Text(critter.get("Name").toString())
+                                                    Image(painter = painterResource(R.drawable.stickbug), contentDescription = "stickbug",
+                                                        Modifier.fillMaxSize())
                                                 }
                                             }
                                         "LegendaryPH" ->
@@ -377,7 +415,8 @@ class TradeActivity : ComponentActivity() {
                                                     }
                                                     showSelecionCard.value = false
                                                 }) {
-                                                    Text(critter.get("Name").toString())
+                                                    Image(painter = painterResource(R.drawable.codebug), contentDescription = "codebug",
+                                                        Modifier.fillMaxSize())
                                                 }
                                             }
                                     }
@@ -413,6 +452,10 @@ class TradeActivity : ComponentActivity() {
         }
         db.collection("critter").document(p1Critter.value).update(p2Recv)
 
+
+
+
+
         db.collection("users").document(Player2.value).get().addOnSuccessListener { document ->
             val critters= document.get("CritterCollection") as? List<String> ?: emptyList()
             val temp = mutableListOf<String>()
@@ -424,5 +467,11 @@ class TradeActivity : ComponentActivity() {
         }
         db.collection("critter").document(p2Critter.value).update(p1Recv)
         db.collection("trade").document(tradeID.value).update(mapOf("tradeComplete" to true))
+    }
+
+    override fun onPause() {
+        super.onPause()
+        db.collection("trade").document(tradeID.value).update(mapOf("tradeCanceled" to true))
+        finish()
     }
 }
